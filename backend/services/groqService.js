@@ -1,8 +1,11 @@
 const Groq = require("groq-sdk");
 
-const groq = new Groq({
-  apiKey: process.env.GROQ_API_KEY,
-});
+// Create a groq instance with the provided API key or use the default from env
+function getGroqInstance(apiKey) {
+  return new Groq({
+    apiKey: apiKey || process.env.GROQ_API_KEY,
+  });
+}
 
 const MODEL = process.env.GROQ_MODEL || "llama-3.3-70b-versatile";
 
@@ -100,7 +103,9 @@ ${code}
 
 // ─── API Callers ──────────────────────────────────────────────
 
-async function callGroq(prompt, stream = false) {
+async function callGroq(prompt, stream = false, apiKey = null) {
+  const groq = getGroqInstance(apiKey);
+  
   const params = {
     model: MODEL,
     messages: [
@@ -190,29 +195,29 @@ function normalizeCodeString(str) {
 
 // ─── Exported Functions ──────────────────────────────────────
 
-async function fullReview(code, language, problemName) {
+async function fullReview(code, language, problemName, apiKey = null) {
   const prompt = buildFullReviewPrompt(code, language, problemName);
-  return callGroq(prompt);
+  return callGroq(prompt, false, apiKey);
 }
 
-async function getHints(code, language) {
+async function getHints(code, language, apiKey = null) {
   const prompt = buildHintPrompt(code, language);
-  return callGroq(prompt);
+  return callGroq(prompt, false, apiKey);
 }
 
-async function analyzeComplexity(code, language) {
+async function analyzeComplexity(code, language, apiKey = null) {
   const prompt = buildComplexityPrompt(code, language);
-  return callGroq(prompt);
+  return callGroq(prompt, false, apiKey);
 }
 
-async function generateTests(code, language) {
+async function generateTests(code, language, apiKey = null) {
   const prompt = buildUnitTestPrompt(code, language);
-  return callGroq(prompt);
+  return callGroq(prompt, false, apiKey);
 }
 
-async function streamReview(code, language, problemName) {
+async function streamReview(code, language, problemName, apiKey = null) {
   const prompt = buildFullReviewPrompt(code, language, problemName);
-  return callGroq(prompt, true);
+  return callGroq(prompt, true, apiKey);
 }
 
 module.exports = {

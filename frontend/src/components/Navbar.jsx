@@ -1,13 +1,18 @@
 import { useState, useEffect, useRef } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { FiLogOut, FiLayout, FiUser, FiCode } from "react-icons/fi";
+import { useReview } from "../context/ReviewContext";
+import { FiLogOut, FiLayout, FiUser, FiCode, FiSettings } from "react-icons/fi";
 
 export default function Navbar() {
   const { user, logout } = useAuth();
+  const { apiKey, setApiKey } = useReview();
   const navigate = useNavigate();
   const location = useLocation();
   const [visible, setVisible] = useState(true);
+  const [showSettings, setShowSettings] = useState(false);
+  const [tempApiKey, setTempApiKey] = useState(apiKey || "");
+  const settingsRef = useRef(null);
   const lastScrollY = useRef(0);
 
   const handleLogout = () => {
@@ -32,6 +37,23 @@ export default function Navbar() {
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
+
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (settingsRef.current && !settingsRef.current.contains(e.target)) {
+        setShowSettings(false);
+      }
+    };
+    if (showSettings) {
+      document.addEventListener("mousedown", handleClickOutside);
+      return () => document.removeEventListener("mousedown", handleClickOutside);
+    }
+  }, [showSettings]);
+
+  const handleSaveApiKey = () => {
+    setApiKey(tempApiKey);
+    setShowSettings(false);
+  };
 
   return (
     <>
@@ -221,6 +243,161 @@ export default function Navbar() {
           border-color: rgba(99,102,241,0.6);
           color: #c4b5fd;
         }
+
+        /* Settings Button */
+        .nb-settings-btn {
+          display: flex; align-items: center; justify-content: center;
+          width: 36px; height: 36px;
+          border-radius: 50%;
+          border: 1px solid rgba(255,255,255,0.07);
+          background: rgba(255,255,255,0.03);
+          color: rgba(255,255,255,0.25);
+          cursor: pointer;
+          transition: all 0.2s;
+          flex-shrink: 0;
+          margin-left: 2px;
+          position: relative;
+        }
+        .nb-settings-btn:hover {
+          background: rgba(34,211,238,0.08);
+          border-color: rgba(34,211,238,0.3);
+          color: #22d3ee;
+        }
+        .nb-settings-btn.active {
+          background: rgba(34,211,238,0.15);
+          border-color: rgba(34,211,238,0.5);
+          color: #22d3ee;
+        }
+
+        /* Settings Modal */
+        .nb-settings-modal {
+          position: fixed;
+          top: 70px;
+          right: 20px;
+          background: rgba(12, 12, 20, 0.95);
+          border: 1px solid rgba(34,211,238,0.3);
+          border-radius: 12px;
+          padding: 20px;
+          z-index: 100;
+          box-shadow: 0 8px 32px rgba(0,0,0,0.6), 0 0 0 1px rgba(34,211,238,0.1) inset;
+          backdrop-filter: blur(16px);
+          width: 320px;
+          max-width: calc(100vw - 40px);
+          animation: slideDown 0.22s ease;
+        }
+        @keyframes slideDown {
+          from {
+            opacity: 0;
+            transform: translateY(-8px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+
+        .nb-settings-title {
+          font-family: 'Syne', sans-serif;
+          font-size: 12px;
+          font-weight: 600;
+          letter-spacing: 0.08em;
+          text-transform: uppercase;
+          color: rgba(255,255,255,0.7);
+          margin-bottom: 14px;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+        }
+
+        .nb-api-input-group {
+          display: flex;
+          flex-direction: column;
+          gap: 10px;
+        }
+
+        .nb-api-label {
+          font-family: 'Geist Mono', monospace;
+          font-size: 10px;
+          font-weight: 500;
+          letter-spacing: 0.05em;
+          text-transform: uppercase;
+          color: rgba(255,255,255,0.4);
+        }
+
+        .nb-api-input {
+          font-family: 'Geist Mono', monospace;
+          font-size: 11px;
+          padding: 9px 12px;
+          background: rgba(255,255,255,0.03);
+          border: 1px solid rgba(34,211,238,0.2);
+          border-radius: 6px;
+          color: rgba(255,255,255,0.8);
+          transition: all 0.2s;
+        }
+        .nb-api-input:focus {
+          outline: none;
+          background: rgba(34,211,238,0.08);
+          border-color: rgba(34,211,238,0.5);
+          box-shadow: 0 0 0 2px rgba(34,211,238,0.15);
+        }
+
+        .nb-api-hint {
+          font-family: 'Geist Mono', monospace;
+          font-size: 9px;
+          color: rgba(255,255,255,0.3);
+          line-height: 1.4;
+          margin-top: 4px;
+        }
+
+        .nb-settings-buttons {
+          display: flex;
+          gap: 8px;
+          margin-top: 14px;
+        }
+
+        .nb-btn-save, .nb-btn-cancel {
+          flex: 1;
+          padding: 8px 12px;
+          border-radius: 6px;
+          border: 1px solid rgba(255,255,255,0.1);
+          font-family: 'Geist Mono', monospace;
+          font-size: 10px;
+          font-weight: 500;
+          letter-spacing: 0.05em;
+          text-transform: uppercase;
+          cursor: pointer;
+          transition: all 0.2s;
+        }
+
+        .nb-btn-save {
+          background: rgba(34,211,238,0.15);
+          color: #22d3ee;
+          border-color: rgba(34,211,238,0.3);
+        }
+        .nb-btn-save:hover {
+          background: rgba(34,211,238,0.25);
+          border-color: rgba(34,211,238,0.6);
+        }
+
+        .nb-btn-cancel {
+          background: rgba(255,255,255,0.03);
+          color: rgba(255,255,255,0.5);
+        }
+        .nb-btn-cancel:hover {
+          background: rgba(255,255,255,0.08);
+          color: rgba(255,255,255,0.7);
+        }
+
+        .nb-api-status {
+          font-family: 'Geist Mono', monospace;
+          font-size: 9px;
+          color: rgba(34,211,238,0.6);
+          margin-top: 8px;
+          padding: 6px 8px;
+          background: rgba(34,211,238,0.05);
+          border-radius: 4px;
+          border-left: 2px solid rgba(34,211,238,0.3);
+        }
       `}</style>
 
       {/* Floating pill */}
@@ -250,6 +427,61 @@ export default function Navbar() {
                   <FiUser size={11} style={{ color: "#a78bfa" }} />
                 </div>
                 <span className="nb-uname">{user.name}</span>
+              </div>
+
+              <div style={{ position: "relative" }} ref={settingsRef}>
+                <button 
+                  className={`nb-settings-btn${showSettings ? " active" : ""}`}
+                  onClick={() => setShowSettings(!showSettings)}
+                  title="API Settings"
+                >
+                  <FiSettings size={13} />
+                </button>
+                {showSettings && (
+                  <div className="nb-settings-modal">
+                    <div className="nb-settings-title">
+                      <span style={{ color: "#22d3ee" }}>⚙</span> API Key Settings
+                    </div>
+                    <div className="nb-api-input-group">
+                      <label className="nb-api-label">Groq API Key</label>
+                      <input
+                        type="password"
+                        className="nb-api-input"
+                        placeholder="gsk_..."
+                        value={tempApiKey}
+                        onChange={(e) => setTempApiKey(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") handleSaveApiKey();
+                        }}
+                      />
+                      <div className="nb-api-hint">
+                        Leave empty to use the default server API key
+                      </div>
+                      {apiKey && (
+                        <div className="nb-api-status">
+                          ✓ Custom API key set
+                        </div>
+                      )}
+                    </div>
+                    <div className="nb-settings-buttons">
+                      <button 
+                        className="nb-btn-save"
+                        onClick={handleSaveApiKey}
+                      >
+                        Save
+                      </button>
+                      <button 
+                        className="nb-btn-cancel"
+                        onClick={() => {
+                          setShowSettings(false);
+                          setTempApiKey(apiKey || "");
+                        }}
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
 
               <button className="nb-logout" onClick={handleLogout} title="Logout">

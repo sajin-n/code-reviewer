@@ -1,17 +1,26 @@
 import api from "./axios";
 
+function getApiHeaders() {
+  const apiKey = localStorage.getItem("groqApiKey");
+  return apiKey ? { "X-Groq-API-Key": apiKey } : {};
+}
+
 export async function submitReview(code, language, problemName) {
-  const { data } = await api.post("/review", { code, language, problemName });
+  const { data } = await api.post("/review", { code, language, problemName }, {
+    headers: getApiHeaders()
+  });
   return data;
 }
 
 export async function submitReviewStream(code, language, problemName, onChunk) {
   const token = localStorage.getItem("token");
+  const apiKey = localStorage.getItem("groqApiKey");
   const res = await fetch("/api/review/stream", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${token}`,
+      ...(apiKey && { "X-Groq-API-Key": apiKey }),
     },
     body: JSON.stringify({ code, language, problemName }),
   });
@@ -42,17 +51,23 @@ export async function submitReviewStream(code, language, problemName, onChunk) {
 }
 
 export async function getHints(code, language) {
-  const { data } = await api.post("/review/hints", { code, language });
+  const { data } = await api.post("/review/hints", { code, language }, {
+    headers: getApiHeaders()
+  });
   return data;
 }
 
 export async function getComplexity(code, language) {
-  const { data } = await api.post("/review/complexity", { code, language });
+  const { data } = await api.post("/review/complexity", { code, language }, {
+    headers: getApiHeaders()
+  });
   return data;
 }
 
 export async function getUnitTests(code, language) {
-  const { data } = await api.post("/review/unit-tests", { code, language });
+  const { data } = await api.post("/review/unit-tests", { code, language }, {
+    headers: getApiHeaders()
+  });
   return data;
 }
 

@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useCallback } from "react";
+import { createContext, useContext, useState, useCallback, useEffect } from "react";
 
 const ReviewContext = createContext(null);
 
@@ -9,6 +9,21 @@ export function ReviewProvider({ children }) {
   const [language, setLanguage] = useState("javascript");
   const [problemName, setProblemName] = useState("");
   const [feedback, setFeedback] = useState(null);
+  const [apiKey, setApiKeyState] = useState(() => {
+    return localStorage.getItem("groqApiKey") || "";
+  });
+
+  useEffect(() => {
+    if (apiKey) {
+      localStorage.setItem("groqApiKey", apiKey);
+    } else {
+      localStorage.removeItem("groqApiKey");
+    }
+  }, [apiKey]);
+
+  const setApiKey = useCallback((key) => {
+    setApiKeyState(key);
+  }, []);
 
   const clearReview = useCallback(() => {
     setCode(DEFAULT_CODE);
@@ -24,6 +39,7 @@ export function ReviewProvider({ children }) {
         language, setLanguage,
         problemName, setProblemName,
         feedback, setFeedback,
+        apiKey, setApiKey,
         clearReview,
         DEFAULT_CODE,
       }}

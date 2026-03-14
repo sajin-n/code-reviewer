@@ -33,7 +33,10 @@ exports.review = async (req, res, next) => {
     const error = validateInput(code, language);
     if (error) return res.status(400).json({ error });
 
-    const aiResult = await fullReview(code, language, problemName || "Untitled");
+    // Get API key from request headers
+    const apiKey = req.headers["x-groq-api-key"] || null;
+
+    const aiResult = await fullReview(code, language, problemName || "Untitled", apiKey);
 
     if (aiResult.parseError) {
       return res.status(502).json({
@@ -81,12 +84,15 @@ exports.reviewStream = async (req, res, next) => {
     const error = validateInput(code, language);
     if (error) return res.status(400).json({ error });
 
+    // Get API key from request headers
+    const apiKey = req.headers["x-groq-api-key"] || null;
+
     res.setHeader("Content-Type", "text/event-stream");
     res.setHeader("Cache-Control", "no-cache");
     res.setHeader("Connection", "keep-alive");
     res.flushHeaders();
 
-    const stream = await streamReview(code, language, problemName || "Untitled");
+    const stream = await streamReview(code, language, problemName || "Untitled", apiKey);
     let fullText = "";
 
     for await (const chunk of stream) {
@@ -110,7 +116,10 @@ exports.hints = async (req, res, next) => {
     const error = validateInput(code, language);
     if (error) return res.status(400).json({ error });
 
-    const result = await getHints(code, language);
+    // Get API key from request headers
+    const apiKey = req.headers["x-groq-api-key"] || null;
+
+    const result = await getHints(code, language, apiKey);
     res.json(result);
   } catch (err) {
     next(err);
@@ -125,7 +134,10 @@ exports.complexity = async (req, res, next) => {
     const error = validateInput(code, language);
     if (error) return res.status(400).json({ error });
 
-    const result = await analyzeComplexity(code, language);
+    // Get API key from request headers
+    const apiKey = req.headers["x-groq-api-key"] || null;
+
+    const result = await analyzeComplexity(code, language, apiKey);
     res.json(result);
   } catch (err) {
     next(err);
@@ -140,7 +152,10 @@ exports.unitTests = async (req, res, next) => {
     const error = validateInput(code, language);
     if (error) return res.status(400).json({ error });
 
-    const result = await generateTests(code, language);
+    // Get API key from request headers
+    const apiKey = req.headers["x-groq-api-key"] || null;
+
+    const result = await generateTests(code, language, apiKey);
     res.json(result);
   } catch (err) {
     next(err);
