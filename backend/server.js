@@ -16,22 +16,44 @@ app.use(helmet());
 
 // CORS configuration - allow frontend to communicate with backend
 const allowedOrigins = [
-  process.env.CLIENT_URL || "http://localhost:5173", // Production frontend
-  "http://localhost:3000", // Local development
-  "http://localhost:5173", // Vite dev server
+  process.env.CLIENT_URL, // Production frontend (from env)
+  "http://localhost:3000",
+  "http://localhost:5173",
+  "http://localhost:3001",
+  // Allow any Vercel deployment for flexibility
+  ...(process.env.NODE_ENV === 'production' 
+    ? [] 
+    : ['http://127.0.0.1:5173', 'http://127.0.0.1:3000']
+  ),
 ];
+
+// Remove undefined values
+const validOrigins = allowedOrigins.filter(Boolean);
 
 app.use(
   cors({
     origin: (origin, callback) => {
-      if (!origin || allowedOrigins.includes(origin)) {
+      // Allow requests with no origin (like mobile apps, curl requests)
+      if (!origin) {
+        return callback(null, true);
+      }
+      
+      // Check if origin is in allowed list
+      if (validOrigins.includes(origin)) {
         callback(null, true);
-      } else {
-        console.log("CORS rejected origin:", origin);
+      } 
+      // In production, allow if it's from vercel.app domain (your Vercel deployments)
+      else if (process.env.NODE_ENV === 'production' && origin.includes('vercel.app')) {
+        callback(null, true);
+      }
+      else {
+        console.log("❌ CORS rejected origin:", origin);
         callback(new Error("Not allowed by CORS"));
       }
     },
     credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization", "X-Groq-API-Key"],
   })
 );
 
@@ -67,8 +89,10 @@ const PORT = process.env.PORT || 5000;
 const MONGO_URI = process.env.MONGO_URI || "mongodb://127.0.0.1:27017/ai-code-reviewer";
 
 console.log("🔐 CORS Configuration:");
-console.log("   Allowed Origins:", allowedOrigins);
+console.log("   Allowed Origins:", validOrigins);
 console.log("   CLIENT_URL from env:", process.env.CLIENT_URL || "NOT SET");
+console.log("   Vercel deployments auto-allowed in production");
+console.log("✅ Server starting...");
 
 mongoose
   .connect(MONGO_URI)
