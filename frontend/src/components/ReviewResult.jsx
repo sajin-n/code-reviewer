@@ -342,8 +342,8 @@ const STYLES = `
   .rr-expand {
     position: absolute;
     top: 42px;               /* just below header */
-    left: -5%;              /* extend wider than card on both sides */
-    right: -5%;
+    left: -30%;              /* extend wider than card on both sides */
+    right: -30%;
     background: var(--surface);
     border: 1px solid var(--border2);
     border-radius: var(--radius);

@@ -10,12 +10,20 @@ api.interceptors.request.use((config) => {
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
+  
+  // Add Groq API key if available
+  const apiKey = localStorage.getItem("groqApiKey");
+  if (apiKey) {
+    config.headers["X-Groq-API-Key"] = apiKey;
+  }
+  
   return config;
 });
 
 api.interceptors.response.use(
   (res) => res,
   (err) => {
+    // Only redirect to login for actual 401 auth errors, not for API key validation errors (403)
     if (err.response?.status === 401) {
       localStorage.removeItem("token");
       window.location.href = "/login";
