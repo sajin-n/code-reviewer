@@ -1,6 +1,7 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import toast from "react-hot-toast";
-import { FiSend, FiHelpCircle, FiActivity, FiCheckSquare, FiTrash2 } from "react-icons/fi";
+import { FiSend, FiHelpCircle, FiActivity, FiCheckSquare, FiTrash2, FiAlertCircle } from "react-icons/fi";
 import CodeEditor from "../components/CodeEditor";
 import LanguageSelector from "../components/LanguageSelector";
 import ReviewResult from "../components/ReviewResult";
@@ -198,6 +199,53 @@ const STYLES = `
     gap: 8px;
     margin-top: 14px;
   }
+
+  /* API Key Warning Banner */
+  .rp-api-warning {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    margin-bottom: 16px;
+    background: rgba(239, 68, 68, 0.08);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    border-radius: 12px;
+    color: #fca5a5;
+  }
+  .rp-api-warning svg {
+    flex-shrink: 0;
+    color: #f87171;
+  }
+  .rp-api-warning-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .rp-api-warning-text {
+    font-family: 'Geist Mono', monospace;
+    font-size: 12px;
+    color: #fca5a5;
+  }
+  .rp-api-warning-link {
+    font-family: 'Geist Mono', monospace;
+    font-size: 11px;
+    color: #f87171;
+    text-decoration: none;
+    border: 1px solid rgba(248, 113, 113, 0.3);
+    padding: 6px 12px;
+    border-radius: 6px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.2s;
+    width: fit-content;
+  }
+  .rp-api-warning-link:hover {
+    background: rgba(248, 113, 113, 0.1);
+    border-color: rgba(248, 113, 113, 0.6);
+    color: #fecaca;
+  }
 `;
 
 const ACTION_LABELS = {
@@ -213,6 +261,7 @@ export default function ReviewPage() {
     language, setLanguage,
     problemName, setProblemName,
     feedback, setFeedback,
+    apiKey,
     clearReview, DEFAULT_CODE,
   } = useReview();
 
@@ -220,6 +269,10 @@ export default function ReviewPage() {
   const [activeAction, setActiveAction] = useState(null);
 
   const handleAction = async (action, apiFn) => {
+    if (!apiKey) {
+      toast.error("Please configure your Groq API key in settings first");
+      return;
+    }
     if (!code.trim() || code.trim() === DEFAULT_CODE.trim()) {
       toast.error("Please enter some code first");
       return;
@@ -275,6 +328,21 @@ export default function ReviewPage() {
           </p>
         </div>
 
+        {/* API Key Warning */}
+        {!apiKey && (
+          <div className="rp-api-warning">
+            <FiAlertCircle size={20} />
+            <div className="rp-api-warning-content">
+              <div className="rp-api-warning-text">
+                <strong>API Key Required</strong> — You must configure your Groq API key to use the review features.
+              </div>
+              <Link to="/" className="rp-api-warning-link">
+                ⚙ Go to Settings
+              </Link>
+            </div>
+          </div>
+        )}
+
         {/* Controls bar */}
         <div className="rp-controls">
           <LanguageSelector language={language} onChange={setLanguage} />
@@ -296,7 +364,7 @@ export default function ReviewPage() {
           <button
             className={`rp-btn rp-btn-primary ${loading && activeAction === "review" ? "rp-btn-loading" : ""}`}
             onClick={() => handleAction("review", () => submitReview(code, language, problemName))}
-            disabled={loading}
+            disabled={loading || !apiKey}
           >
             <FiSend size={12} />
             Full Review
@@ -305,7 +373,7 @@ export default function ReviewPage() {
           <button
             className="rp-btn rp-btn-yellow"
             onClick={() => handleAction("complexity", () => getComplexity(code, language))}
-            disabled={loading}
+            disabled={loading || !apiKey}
           >
             <FiActivity size={12} />
             Complexity
@@ -314,7 +382,7 @@ export default function ReviewPage() {
           <button
             className="rp-btn rp-btn-amber"
             onClick={() => handleAction("hints", () => getHints(code, language))}
-            disabled={loading}
+            disabled={loading || !apiKey}
           >
             <FiHelpCircle size={12} />
             Hints
@@ -323,7 +391,7 @@ export default function ReviewPage() {
           <button
             className="rp-btn rp-btn-teal"
             onClick={() => handleAction("tests", () => getUnitTests(code, language))}
-            disabled={loading}
+            disabled={loading || !apiKey}
           >
             <FiCheckSquare size={12} />
             Gen Tests

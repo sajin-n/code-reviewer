@@ -455,11 +455,11 @@ export default function Navbar() {
                         }}
                       />
                       <div className="nb-api-hint">
-                        Leave empty to use the default server API key
+                        Required: Your personal Groq API key to use the platform. Get one at groq.com
                       </div>
                       {apiKey && (
                         <div className="nb-api-status">
-                          ✓ Custom API key set
+                          ✓ API key configured
                         </div>
                       )}
                     </div>

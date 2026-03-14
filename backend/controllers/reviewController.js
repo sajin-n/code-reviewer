@@ -35,6 +35,9 @@ exports.review = async (req, res, next) => {
 
     // Get API key from request headers
     const apiKey = req.headers["x-groq-api-key"] || null;
+    if (!apiKey) {
+      return res.status(403).json({ error: "API key is required. Please configure your Groq API key in settings." });
+    }
 
     const aiResult = await fullReview(code, language, problemName || "Untitled", apiKey);
 
@@ -86,6 +89,10 @@ exports.reviewStream = async (req, res, next) => {
 
     // Get API key from request headers
     const apiKey = req.headers["x-groq-api-key"] || null;
+    if (!apiKey) {
+      res.setHeader("Content-Type", "application/json");
+      return res.status(403).json({ error: "API key is required. Please configure your Groq API key in settings." });
+    }
 
     res.setHeader("Content-Type", "text/event-stream");
     res.setHeader("Cache-Control", "no-cache");
@@ -118,6 +125,9 @@ exports.hints = async (req, res, next) => {
 
     // Get API key from request headers
     const apiKey = req.headers["x-groq-api-key"] || null;
+    if (!apiKey) {
+      return res.status(403).json({ error: "API key is required. Please configure your Groq API key in settings." });
+    }
 
     const result = await getHints(code, language, apiKey);
     res.json(result);
@@ -136,6 +146,9 @@ exports.complexity = async (req, res, next) => {
 
     // Get API key from request headers
     const apiKey = req.headers["x-groq-api-key"] || null;
+    if (!apiKey) {
+      return res.status(403).json({ error: "API key is required. Please configure your Groq API key in settings." });
+    }
 
     const result = await analyzeComplexity(code, language, apiKey);
     res.json(result);
@@ -154,6 +167,9 @@ exports.unitTests = async (req, res, next) => {
 
     // Get API key from request headers
     const apiKey = req.headers["x-groq-api-key"] || null;
+    if (!apiKey) {
+      return res.status(403).json({ error: "API key is required. Please configure your Groq API key in settings." });
+    }
 
     const result = await generateTests(code, language, apiKey);
     res.json(result);
