@@ -1,0 +1,43 @@
+@import "tailwindcss";
+
+/* ─── Custom base styles ─────────────────────────── */
+@layer base {
+  body {
+    @apply bg-gray-950 text-gray-100 antialiased;
+    font-family: "Inter", system-ui, -apple-system, sans-serif;
+  }
+}
+
+/* ─── Scrollbar ──────────────────────────────────── */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  @apply bg-gray-900;
+}
+::-webkit-scrollbar-thumb {
+  @apply bg-gray-700 rounded-full;
+}
+
+/* ─── Monaco overrides ───────────────────────────── */
+.monaco-editor .margin {
+  background-color: #0f172a !important;
+}
+
+/* ─── Markdown rendered content ──────────────────── */
+.prose pre {
+  @apply bg-gray-900 rounded-lg p-4 overflow-x-auto;
+}
+.prose code {
+  @apply text-emerald-400;
+}
+
+/* ─── Animations ─────────────────────────────────── */
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 8px rgba(16, 185, 129, 0.3); }
+  50%      { box-shadow: 0 0 20px rgba(16, 185, 129, 0.6); }
+}
+.animate-pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
