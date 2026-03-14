@@ -1,7 +1,12 @@
 import axios from "axios";
 
 // Use environment variable for API base URL, fallback to /api for development
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "/api";
+let API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "/api";
+
+// If it's a full URL (starts with http), append /api if not already there
+if (API_BASE_URL.startsWith("http") && !API_BASE_URL.endsWith("/api")) {
+  API_BASE_URL = API_BASE_URL + "/api";
+}
 
 const api = axios.create({
   baseURL: API_BASE_URL,
