@@ -13,9 +13,24 @@ const app = express();
 
 // --------------- Security Middleware ---------------
 app.use(helmet());
+
+// CORS configuration - allow frontend to communicate with backend
+const allowedOrigins = [
+  process.env.CLIENT_URL || "http://localhost:5173", // Production frontend
+  "http://localhost:3000", // Local development
+  "http://localhost:5173", // Vite dev server
+];
+
 app.use(
   cors({
-    origin: process.env.CLIENT_URL || "http://localhost:5173",
+    origin: (origin, callback) => {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        console.log("CORS rejected origin:", origin);
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
     credentials: true,
   })
 );
@@ -50,6 +65,10 @@ app.use((err, _req, res, _next) => {
 // --------------- Database & Start ---------------
 const PORT = process.env.PORT || 5000;
 const MONGO_URI = process.env.MONGO_URI || "mongodb://127.0.0.1:27017/ai-code-reviewer";
+
+console.log("🔐 CORS Configuration:");
+console.log("   Allowed Origins:", allowedOrigins);
+console.log("   CLIENT_URL from env:", process.env.CLIENT_URL || "NOT SET");
 
 mongoose
   .connect(MONGO_URI)
